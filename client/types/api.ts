@@ -94,6 +94,7 @@ export interface DoctorProfile {
   yearsOfExperience: number | null;
   bio: string | null;
   consultationFee: number | null;
+  weeklyAvailability: { dayOfWeek: number; startTime: string; endTime: string }[];
   verificationStatus: VerificationStatus;
   verification: {
     reviewedBy: string;

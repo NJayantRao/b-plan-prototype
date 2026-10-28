@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/features/auth/auth-provider";
+import { NotificationInbox } from "@/features/phase-four/notification-inbox";
 import { fullName, initials } from "@/lib/format";
 import { NAV } from "@/lib/nav";
 import { ROLE_HOME, ROLE_LABEL } from "@/lib/roles";
@@ -158,7 +159,10 @@ function Shell({ role, children }: { role: Role; children: ReactNode }) {
               Demo environment
             </span>
           </div>
-          <AccountMenu />
+          <div className="flex items-center gap-2">
+            <NotificationInbox />
+            <AccountMenu />
+          </div>
         </header>
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">{children}</main>
       </div>

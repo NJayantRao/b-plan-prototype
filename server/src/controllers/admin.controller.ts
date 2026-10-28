@@ -14,6 +14,7 @@ import {
   setResponderAuthorizationSchema,
   verifyFacilitySchema,
 } from "../validators/facility.validator.js";
+import { paginationSchema } from "../utils/pagination.js";
 
 export const listDoctors: RequestHandler = AsyncHandler(
   async (req: Request, res: Response) => {
@@ -27,6 +28,14 @@ export const getOverview: RequestHandler = AsyncHandler(
   async (_req: Request, res: Response) => {
     const data = await adminService.getOverview();
     res.status(200).json(new ApiResponse(200, "Admin overview", data));
+  },
+);
+
+export const listResponders: RequestHandler = AsyncHandler(
+  async (req: Request, res: Response) => {
+    const { page, limit } = paginationSchema.parse(req.query);
+    const data = await adminService.listResponders(page, limit);
+    res.status(200).json(new ApiResponse(200, "Responders", data));
   },
 );
 

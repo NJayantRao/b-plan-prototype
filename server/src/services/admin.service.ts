@@ -17,7 +17,7 @@ import { buildPagination } from "../utils/pagination.js";
 import { recordAudit, type RequestContext } from "./audit.service.js";
 import type { Actor } from "./patient.service.js";
 import * as adminOverviewService from "./admin-overview.service.js";
-import { setResponderAuthorization } from "../repository/responder.repository.js";
+import { listResponderDirectory as listResponderDirectoryRepo, setResponderAuthorization } from "../repository/responder.repository.js";
 import * as facilityService from "./facility.service.js";
 
 export const listDoctors = async (
@@ -112,6 +112,11 @@ export const listAuditLogs = async (
 
 export const getOverview = adminOverviewService.getOverview;
 export const verifyFacility = facilityService.setVerification;
+
+export const listResponders = async (page: number, limit: number) => {
+  const { items, total } = await listResponderDirectoryRepo(page, limit);
+  return { items, pagination: buildPagination(page, limit, total) };
+};
 
 export const authorizeResponder = async (
   admin: Actor,

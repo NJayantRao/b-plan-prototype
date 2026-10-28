@@ -96,6 +96,7 @@ endpoints require the authenticated role shown in parentheses.
 | `POST /facilities` | partner | Submit a facility for admin verification |
 | `GET /notifications`, `PATCH /notifications/:id/read` | authenticated user | Read the in-app simulated notification inbox |
 | `GET /admin/overview` | admin | View prototype activity counts |
+| `GET /admin/responders` | admin | List responder accounts and authorization state |
 | `PATCH /admin/facilities/:id/verification` | admin | Verify or reject a facility |
 | `PATCH /admin/responders/:id/authorization` | admin | Authorize an existing responder account |
 

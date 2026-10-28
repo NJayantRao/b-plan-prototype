@@ -8,6 +8,7 @@ const router: ExpressRouter = Router();
 router.use(authenticate, authorize("admin"));
 
 router.get("/overview", adminController.getOverview);
+router.get("/responders", adminController.listResponders);
 router.get("/doctors", adminController.listDoctors);
 router.patch("/doctors/:id/verification", adminController.setDoctorVerification);
 router.patch("/facilities/:id/verification", adminController.verifyFacility);

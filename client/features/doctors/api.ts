@@ -9,6 +9,7 @@ export interface UpdateDoctorProfilePayload {
   yearsOfExperience?: number;
   bio?: string;
   consultationFee?: number;
+  weeklyAvailability?: { dayOfWeek: number; startTime: string; endTime: string }[];
 }
 
 export const doctorsApi = {

@@ -15,7 +15,7 @@ const FEATURES = [
   { icon: Stethoscope, title: "Doctor review", text: "Verified doctors record independent findings, stored separately from the AI output." },
   { icon: ShieldCheck, title: "Second opinions", text: "Compare AI and doctor assessments side by side and escalate when they differ." },
   { icon: ClipboardCheck, title: "Care plans & follow-up", text: "Tasks, referrals and reminders so care doesn't end at the consultation." },
-  { icon: HeartHandshake, title: "Donor network", text: "Search blood and stem-cell donors with consent and privacy protection." },
+  { icon: HeartHandshake, title: "Donor network", text: "Register consented blood donation availability and request anonymous synthetic matches." },
   { icon: Siren, title: "Emergency coordination", text: "Request help and track a responder. Simulated in this prototype." },
 ];
 

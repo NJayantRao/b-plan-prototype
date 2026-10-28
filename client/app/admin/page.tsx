@@ -1,34 +1,42 @@
 "use client";
 
-import { ArrowRight, ShieldCheck, ShieldQuestion, ShieldX } from "lucide-react";
+import { Activity, ArrowRight, Building2, CalendarDays, ClipboardList, Radio, ShieldCheck, ShieldQuestion, Siren, Users } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/common/page-header";
 import { StatCard } from "@/components/common/stat-card";
 import { EmptyState, ErrorState, TableSkeleton } from "@/components/common/states";
 import { OutcomeBadge } from "@/components/common/status-badge";
 import { buttonVariants } from "@/components/ui/button";
-import { useAdminDoctors, useAuditLogs, useDoctorCounts } from "@/features/admin/hooks";
+import { useAdminDoctors, useAuditLogs } from "@/features/admin/hooks";
+import { useAdminOverview } from "@/features/phase-four/hooks";
 import { formatDateTime, fullName } from "@/lib/format";
 import { cn } from "cn";
 
 export default function AdminOverviewPage() {
-  const counts = useDoctorCounts();
+  const overview = useAdminOverview();
   const pending = useAdminDoctors({ status: "pending", page: 1, limit: 5 });
   const recent = useAuditLogs({ page: 1, limit: 8 });
 
   return (
     <>
-      <PageHeader title="Overview" description="Doctor verification queue and recent platform activity." />
+      <PageHeader title="Overview" description="Prototype platform activity and administrator review queues." />
 
-      {counts.isError ? (
-        <ErrorState error={counts.error} onRetry={counts.refetch} title="Couldn't load doctor counts" />
+      {overview.isError ? (
+        <ErrorState error={overview.error} onRetry={() => void overview.refetch()} title="Couldn't load platform overview" />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <StatCard label="Awaiting verification" value={counts.counts.pending} hint="Doctors in the review queue" icon={ShieldQuestion} loading={counts.isPending} />
-          <StatCard label="Verified doctors" value={counts.counts.verified} hint="Cleared for clinical work" icon={ShieldCheck} loading={counts.isPending} />
-          <StatCard label="Rejected" value={counts.counts.rejected} hint="Not approved" icon={ShieldX} loading={counts.isPending} />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <StatCard label="Users" value={overview.data?.users.total ?? 0} hint={`${overview.data?.users.patients ?? 0} patients · ${overview.data?.users.doctors ?? 0} doctors`} icon={Users} loading={overview.isPending} />
+          <StatCard label="Doctor verification" value={overview.data?.doctors.pendingVerification ?? 0} hint={`${overview.data?.doctors.verified ?? 0} verified`} icon={ShieldQuestion} loading={overview.isPending} />
+          <StatCard label="Appointments" value={overview.data?.appointments.total ?? 0} hint={`${overview.data?.appointments.upcoming ?? 0} upcoming`} icon={CalendarDays} loading={overview.isPending} />
+          <StatCard label="Emergencies" value={overview.data?.emergencies.total ?? 0} hint={`${overview.data?.emergencies.active ?? 0} active · simulated`} icon={Siren} loading={overview.isPending} />
+          <StatCard label="Facilities" value={overview.data?.facilities.total ?? 0} hint={`${overview.data?.facilities.pending ?? 0} pending verification`} icon={Building2} loading={overview.isPending} />
+          <StatCard label="Donor requests" value={overview.data?.donors.openDonorRequests ?? 0} hint={`${overview.data?.donors.registeredDonors ?? 0} registered donors`} icon={ShieldCheck} loading={overview.isPending} />
+          <StatCard label="Assessments" value={overview.data?.assessments.total ?? 0} hint={`${overview.data?.assessments.awaitingReview ?? 0} awaiting review`} icon={ClipboardList} loading={overview.isPending} />
+          <StatCard label="Active care plans" value={overview.data?.carePlans.active ?? 0} hint="Synthetic prototype activity" icon={Activity} loading={overview.isPending} />
+          <StatCard label="Authorized responders" value={overview.data?.authorizedResponders ?? 0} hint="Responder accounts cleared for the simulation" icon={Radio} loading={overview.isPending} />
         </div>
       )}
+      {overview.data ? <p className="mt-3 text-xs text-muted-foreground">{overview.data.notice}</p> : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="overflow-hidden rounded-xl border bg-card">

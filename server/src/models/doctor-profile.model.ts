@@ -14,6 +14,7 @@ export interface DoctorProfileEntity {
   yearsOfExperience?: number;
   bio?: string;
   consultationFee?: number;
+  weeklyAvailability: { dayOfWeek: number; startTime: string; endTime: string }[];
   verificationStatus: VerificationStatus;
   verification?: {
     reviewedBy: Types.ObjectId;
@@ -51,6 +52,19 @@ const doctorProfileSchema = new Schema<DoctorProfileEntity>(
     yearsOfExperience: { type: Number, min: 0, max: 70 },
     bio: { type: String, trim: true, maxlength: 1000 },
     consultationFee: { type: Number, min: 0 },
+    weeklyAvailability: {
+      type: [
+        new Schema(
+          {
+            dayOfWeek: { type: Number, required: true, min: 0, max: 6 },
+            startTime: { type: String, required: true, match: /^([01]\d|2[0-3]):(00|30)$/ },
+            endTime: { type: String, required: true, match: /^([01]\d|2[0-3]):(00|30)$/ },
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
     verificationStatus: {
       type: String,
       enum: VERIFICATION_STATUSES,

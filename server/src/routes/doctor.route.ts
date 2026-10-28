@@ -5,6 +5,9 @@ import authorize from "../middlewares/authorize.js";
 
 const router: ExpressRouter = Router();
 
+router.get("/", authenticate, authorize("patient"), doctorController.listDirectory);
+router.get("/:id/availability", authenticate, authorize("patient"), doctorController.getAvailability);
+router.get("/:id", authenticate, authorize("patient"), doctorController.getPublicProfile);
 router.use(authenticate, authorize("doctor"));
 
 // Unverified doctors can manage their profile (that is how they get verified)

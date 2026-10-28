@@ -30,6 +30,7 @@ export const updateMyDoctorProfile = async (
     "yearsOfExperience",
     "bio",
     "consultationFee",
+    "weeklyAvailability",
   ] as const;
   for (const field of fields) {
     if (input[field] !== undefined) $set[field] = input[field];

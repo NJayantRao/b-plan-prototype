@@ -56,3 +56,20 @@ export const listDoctorProfiles = async (
   ]);
   return { items, total };
 };
+
+export const listVerifiedDoctorProfiles = async (
+  filters: { specialty?: string | undefined; page: number; limit: number },
+) => {
+  const query: QueryFilter<DoctorProfileEntity> = {
+    verificationStatus: "verified",
+    ...(filters.specialty
+      ? { specialties: new RegExp(`^${filters.specialty.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") }
+      : {}),
+  };
+  const [items, total] = await Promise.all([
+    DoctorProfile.find(query).sort({ updatedAt: -1 }).skip((filters.page - 1) * filters.limit)
+      .limit(filters.limit).lean<DoctorProfileEntity[]>().exec(),
+    DoctorProfile.countDocuments(query).exec(),
+  ]);
+  return { items, total };
+};

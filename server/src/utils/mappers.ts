@@ -38,6 +38,7 @@ export const toPublicDoctorProfile = (profile: DoctorProfileEntity) => ({
   yearsOfExperience: profile.yearsOfExperience ?? null,
   bio: profile.bio ?? null,
   consultationFee: profile.consultationFee ?? null,
+  weeklyAvailability: profile.weeklyAvailability ?? [],
   verificationStatus: profile.verificationStatus,
   verification: profile.verification
     ? {

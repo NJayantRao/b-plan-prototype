@@ -16,6 +16,9 @@ import { toPublicAuditLog, toPublicDoctorProfile } from "../utils/mappers.js";
 import { buildPagination } from "../utils/pagination.js";
 import { recordAudit, type RequestContext } from "./audit.service.js";
 import type { Actor } from "./patient.service.js";
+import * as adminOverviewService from "./admin-overview.service.js";
+import { setResponderAuthorization } from "../repository/responder.repository.js";
+import * as facilityService from "./facility.service.js";
 
 export const listDoctors = async (
   status: VerificationStatus | undefined,
@@ -104,5 +107,33 @@ export const listAuditLogs = async (
   return {
     items: items.map(toPublicAuditLog),
     pagination: buildPagination(page, limit, total),
+  };
+};
+
+export const getOverview = adminOverviewService.getOverview;
+export const verifyFacility = facilityService.setVerification;
+
+export const authorizeResponder = async (
+  admin: Actor,
+  responderUserId: string,
+  authorized: boolean,
+  ctx: RequestContext,
+) => {
+  const user = await findUserById(responderUserId);
+  if (!user || user.role !== "responder") throw new NotFoundError("Responder not found");
+  const profile = await setResponderAuthorization(responderUserId, authorized, admin.userId);
+  if (!profile) throw new NotFoundError("Responder profile not found");
+  await recordAudit({
+    actor: admin,
+    action: "responder.authorization.update",
+    resourceType: "responder",
+    resourceId: responderUserId,
+    outcome: "success",
+    metadata: { authorized },
+  }, ctx);
+  return {
+    userId: responderUserId,
+    authorized: profile.authorized,
+    authorizedAt: profile.authorizedAt ?? null,
   };
 };

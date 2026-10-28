@@ -7,10 +7,13 @@ import errorMiddleware from "./middlewares/error-middleware.js";
 import morganMiddleware from "./middlewares/morgan-middleware.js";
 import notFoundMiddleware from "./middlewares/not-found-middleware.js";
 import { adminRouter } from "./routes/admin.route.js";
+import { assessmentRouter } from "./routes/assessment.route.js";
 import { authRouter } from "./routes/auth.route.js";
+import { carePlanRouter } from "./routes/care-plan.route.js";
 import { doctorRouter } from "./routes/doctor.route.js";
 import { healthRouter } from "./routes/health.route.js";
 import { patientRouter } from "./routes/patient.route.js";
+import { secondOpinionRouter } from "./routes/second-opinion.route.js";
 import ApiResponse from "./utils/api-response.js";
 
 const app: Express = express();
@@ -38,7 +41,10 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/patients", patientRouter);
 app.use("/api/v1/doctors", doctorRouter);
 app.use("/api/v1/admin", adminRouter);
-// Later phases mount assessments, appointments, care-plans, etc. here.
+app.use("/api/v1/assessments", assessmentRouter);
+app.use("/api/v1/second-opinions", secondOpinionRouter);
+app.use("/api/v1/care-plans", carePlanRouter);
+// Later phases mount appointments, donors, emergencies, etc. here.
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

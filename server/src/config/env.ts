@@ -39,6 +39,13 @@ const envSchema = z.object({
   // Email delivery is optional: without a key, emails are simulated.
   RESEND_API_KEY: optionalString,
   MAIL_FROM: z.string().min(1).default("Magadh Ventures <onboarding@resend.dev>"),
+  // AI assessments. "auto" = Gemini when GEMINI_API_KEY is set, otherwise a
+  // clearly-labelled deterministic DEMO provider (never in production).
+  AI_MODE: z.enum(["auto", "demo", "gemini"]).default("auto"),
+  GEMINI_API_KEY: optionalString,
+  // gemini-2.5-* models were scheduled for shutdown on 2026-10-16.
+  GEMINI_MODEL: z.string().min(1).default("gemini-3.5-flash"),
+  AI_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(20_000),
 }).refine((env) => env.ACCESS_TOKEN_SECRET !== env.REFRESH_TOKEN_SECRET, {
   message: "ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET must be different",
   path: ["REFRESH_TOKEN_SECRET"],

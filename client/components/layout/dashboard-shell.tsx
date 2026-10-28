@@ -3,8 +3,9 @@
 import { ChevronsUpDown, LogOut, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import { RoleGuard } from "@/components/auth/role-guard";
+import { FullPageSpinner } from "@/components/common/states";
 import { Logo } from "@/components/common/logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -167,8 +168,10 @@ function Shell({ role, children }: { role: Role; children: ReactNode }) {
 
 export function DashboardShell({ role, children }: { role: Role; children: ReactNode }) {
   return (
-    <RoleGuard roles={[role]}>
-      <Shell role={role}>{children}</Shell>
-    </RoleGuard>
+    <Suspense fallback={<FullPageSpinner label="Loading your workspace…" />}>
+      <RoleGuard roles={[role]}>
+        <Shell role={role}>{children}</Shell>
+      </RoleGuard>
+    </Suspense>
   );
 }

@@ -124,3 +124,208 @@ export interface AuditLog {
   metadata: Record<string, unknown> | null;
   createdAt: string;
 }
+
+export type ClinicalSeverity = "mild" | "moderate" | "severe";
+export type ClinicalDurationUnit = "hours" | "days" | "weeks" | "months";
+export type AssessmentStatus =
+  | "awaiting_review"
+  | "in_review"
+  | "reviewed"
+  | "second_opinion"
+  | "completed";
+export type ClinicalPriority = "routine" | "urgent" | "emergency";
+export type AiStatus = "pending" | "completed" | "unavailable" | "not_requested";
+export type AiMode = "gemini" | "demo";
+export type ReviewKind = "primary" | "second_opinion";
+export type ReviewUrgency = "routine" | "soon" | "urgent" | "emergency";
+export type AiAgreement = "agree" | "partially_agree" | "disagree" | "not_assessed";
+export type SecondOpinionOutcome = "confirms_primary" | "differs_from_primary" | "inconclusive";
+export type SecondOpinionStatus = "requested" | "assigned" | "completed";
+export type CareTaskType = "medication" | "test" | "referral" | "lifestyle" | "follow_up" | "other";
+export type CareTaskStatus = "pending" | "in_progress" | "completed" | "skipped";
+
+export interface ClinicalPerson {
+  id: string;
+  name: string;
+}
+
+export interface ClinicalSymptom {
+  name: string;
+  severity: ClinicalSeverity;
+  duration: { value: number; unit: ClinicalDurationUnit };
+}
+
+export interface AssessmentSafety {
+  level: "none" | "urgent" | "emergency";
+  matches: { id: string; label: string; level: "urgent" | "emergency" }[];
+  advice: string;
+  rulesVersion: string;
+  clinicallyReviewed: boolean;
+  evaluatedAt: string;
+}
+
+export interface AiAssessmentResult {
+  summary: string;
+  possibleExplanations: {
+    name: string;
+    likelihood: "more_likely" | "possible" | "less_likely";
+    reasoning: string;
+  }[];
+  uncertainty: string;
+  missingInformation: string[];
+  suggestedNextSteps: { action: string; timeframe: "now" | "within_24_hours" | "within_few_days" | "routine" }[];
+  whenToSeekUrgentCare: string[];
+  suggestedSpecialty?: string;
+  aiRiskEstimate: "low" | "medium" | "high";
+  disclaimer: string;
+  limitations: string;
+}
+
+export interface AssessmentReview {
+  id: string;
+  kind: ReviewKind;
+  doctor: ClinicalPerson | null;
+  findings: {
+    impression: string;
+    possibleConditions: string[];
+    recommendedTests: string[];
+    urgency: ReviewUrgency;
+    advice: string;
+    notes?: string;
+  };
+  aiComparison: { agreement: AiAgreement; differences?: string };
+  outcome: { result: SecondOpinionOutcome; summary: string } | null;
+  submittedAt: string;
+  revisions: { amendedAt: string; reason: string }[];
+}
+
+export interface SecondOpinion {
+  id: string;
+  assessmentId: string;
+  status: SecondOpinionStatus;
+  reason: string | null;
+  requestedByRole: "patient" | "doctor";
+  assignedDoctor: ClinicalPerson | null;
+  finalOutcome: { result: SecondOpinionOutcome; summary: string; decidedAt: string } | null;
+  createdAt: string;
+}
+
+export interface PatientAssessment {
+  id: string;
+  status: AssessmentStatus;
+  priority: ClinicalPriority;
+  createdAt: string;
+  updatedAt: string;
+  symptoms: ClinicalSymptom[];
+  description: string | null;
+  safety: AssessmentSafety;
+  ai: {
+    status: AiStatus;
+    mode: AiMode | null;
+    model: string | null;
+    generatedAt: string | null;
+    result: AiAssessmentResult | null;
+    error: { code: string; message: string } | null;
+    note: string | null;
+    attempts: number;
+    canRetry: boolean;
+  };
+  assignedDoctor: ClinicalPerson | null;
+  reviews: AssessmentReview[];
+  secondOpinion: SecondOpinion | null;
+  carePlanId: string | null;
+}
+
+export interface PatientAssessmentSummary {
+  id: string;
+  status: AssessmentStatus;
+  priority: ClinicalPriority;
+  createdAt: string;
+  symptoms: { name: string; severity: ClinicalSeverity }[];
+  safetyLevel: AssessmentSafety["level"];
+  aiStatus: AiStatus;
+  aiMode: AiMode | null;
+  reviewCount: number;
+}
+
+export interface DoctorAssessment {
+  id: string;
+  role: "primary" | "second_opinion";
+  status: AssessmentStatus;
+  priority: ClinicalPriority;
+  createdAt: string;
+  updatedAt: string;
+  patient: ClinicalPerson & {
+    ageYears: number | null;
+    gender: Gender | null;
+    allergies: string[];
+    currentMedications: string[];
+    conditions: string[];
+  };
+  symptoms: ClinicalSymptom[];
+  description: string | null;
+  safety: AssessmentSafety;
+  ai: PatientAssessment["ai"];
+  primaryDoctor: ClinicalPerson | null;
+  reviews: AssessmentReview[];
+  reviewsHiddenForIndependence: boolean;
+  secondOpinion: SecondOpinion | null;
+  carePlanId: string | null;
+}
+
+export interface AssessmentQueueItem {
+  id: string;
+  type: "primary" | "second_opinion";
+  secondOpinionId: string | null;
+  secondOpinionReason: string | null;
+  priority: ClinicalPriority;
+  createdAt: string;
+  patient: { ageYears: number | null; gender: Gender | null };
+  symptoms: ClinicalSymptom[];
+  description: string | null;
+  safety: { level: AssessmentSafety["level"]; matches: AssessmentSafety["matches"] };
+  ai: { status: AiStatus; mode: AiMode | null; summary: string | null; riskEstimate: string | null };
+}
+
+export interface DoctorAssessmentSummary {
+  id: string;
+  role: "primary" | "second_opinion";
+  status: AssessmentStatus;
+  priority: ClinicalPriority;
+  createdAt: string;
+  updatedAt: string;
+  patient: ClinicalPerson | null;
+  symptoms: { name: string; severity: ClinicalSeverity }[];
+  safetyLevel: AssessmentSafety["level"];
+}
+
+export interface CarePlan {
+  id: string;
+  assessmentId: string;
+  title: string;
+  summary: string | null;
+  doctor: ClinicalPerson | null;
+  patient?: ClinicalPerson | null;
+  tasks: {
+    id: string;
+    title: string;
+    description: string | null;
+    type: CareTaskType;
+    dueDate: string | null;
+    status: CareTaskStatus;
+    completedAt: string | null;
+    notes: string | null;
+    isOverdue: boolean;
+  }[];
+  referrals: { specialty: string; reason: string; urgency: "routine" | "soon" | "urgent" }[];
+  followUpDate: string | null;
+  progressStatus: "active" | "completed" | "cancelled";
+  progress: { done: number; total: number; percent: number; overdue: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SecondOpinionQueueItem extends AssessmentQueueItem {
+  type: "second_opinion";
+  secondOpinionId: string;
+}

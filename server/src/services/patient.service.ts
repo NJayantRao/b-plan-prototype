@@ -5,33 +5,41 @@ import {
   getOrCreatePatientProfile,
   updatePatientProfile,
 } from "../repository/patient-profile.repository.js";
+import { doctorIsPrimaryFor } from "../repository/assessment.repository.js";
+import { doctorIsSecondOpinionFor } from "../repository/second-opinion.repository.js";
 import { findUserById } from "../repository/user.repository.js";
 import { ForbiddenError, NotFoundError } from "../utils/api-error.js";
 import type { UpdatePatientProfileInput } from "../validators/patient.validator.js";
 import { recordAudit, type RequestContext } from "./audit.service.js";
+import { isVerifiedDoctor } from "./doctor-access.service.js";
 
 export interface Actor {
   userId: string;
   role: Role;
 }
 
-type PatientAccess = "self" | "admin";
+type PatientAccess = "self" | "admin" | "doctor";
 
 /**
  * Decides whether `actor` may read `patientUserId`'s record.
  * - the patient themselves: yes
  * - admins: yes, but every read is audited
- * - doctors: NOT yet. A doctor may only see patients they are authorised to
- *   review; that relationship (assignment / appointment / second opinion)
- *   arrives with the assessment models in Phase 3, so access is denied until
- *   then rather than granted by role alone.
+ * - doctors: only a VERIFIED doctor who is currently treating this patient,
+ *   i.e. they claimed one of the patient's assessments, or were assigned its
+ *   second opinion. Every such read is audited. Being a doctor is not enough.
  */
-const resolvePatientAccess = (
+const resolvePatientAccess = async (
   actor: Actor,
   patientUserId: string,
-): PatientAccess | null => {
+): Promise<PatientAccess | null> => {
   if (actor.userId === patientUserId) return "self";
   if (actor.role === "admin") return "admin";
+  if (actor.role === "doctor" && (await isVerifiedDoctor(actor.userId))) {
+    const treating =
+      (await doctorIsPrimaryFor(actor.userId, patientUserId)) ||
+      (await doctorIsSecondOpinionFor(actor.userId, patientUserId));
+    if (treating) return "doctor";
+  }
   return null;
 };
 
@@ -53,7 +61,7 @@ export const getPatientProfileFor = async (
   patientUserId: string,
   ctx: RequestContext,
 ) => {
-  const access = resolvePatientAccess(actor, patientUserId);
+  const access = await resolvePatientAccess(actor, patientUserId);
 
   if (!access) {
     await recordAudit(
@@ -72,7 +80,7 @@ export const getPatientProfileFor = async (
   // Existence is only revealed after the access check has passed.
   const view = await buildProfileView(patientUserId);
 
-  if (access === "admin") {
+  if (access === "admin" || access === "doctor") {
     await recordAudit(
       {
         actor,

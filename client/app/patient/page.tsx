@@ -11,12 +11,11 @@ import { usePatientProfile } from "@/features/patients/hooks";
 import { profileChecklist } from "@/features/patients/schemas";
 import { cn } from "cn";
 
-// Honest roadmap: these are not built yet and are labelled that way.
 const JOURNEY = [
-  { title: "Symptom check", text: "Describe your symptoms and get an AI-assisted summary." },
-  { title: "Doctor review", text: "A verified doctor gives an independent assessment." },
-  { title: "Second opinion", text: "Request another doctor when you want more certainty." },
-  { title: "Care plan", text: "Track tasks, referrals and follow-ups in one place." },
+  { title: "Symptom check", text: "Describe your symptoms and submit them for doctor review.", href: "/patient/assessments", link: "Start an assessment" },
+  { title: "Doctor review", text: "Follow your case and read verified-doctor findings.", href: "/patient/assessments", link: "View assessments" },
+  { title: "Second opinion", text: "Request another doctor after the first review.", href: "/patient/assessments", link: "Review your cases" },
+  { title: "Care plan", text: "Track tasks and follow-up recommendations.", href: "/patient/care-plans", link: "View care plans" },
 ];
 
 export default function PatientOverviewPage() {
@@ -61,7 +60,7 @@ export default function PatientOverviewPage() {
       <section className="mt-6 rounded-xl border bg-card">
         <div className="flex items-center justify-between border-b px-5 py-4">
           <h2 className="text-[15px] font-semibold">Your care journey</h2>
-          <StatusPill tone="grey">Coming in the next release</StatusPill>
+          <StatusPill tone="green">Available</StatusPill>
         </div>
         <ol className="grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
           {JOURNEY.map((step, index) => (
@@ -71,6 +70,9 @@ export default function PatientOverviewPage() {
               </span>
               <p className="mt-3 text-sm font-medium">{step.title}</p>
               <p className="mt-1 text-sm text-muted-foreground">{step.text}</p>
+              <Link href={step.href} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                {step.link}<ArrowRight className="size-3.5" aria-hidden />
+              </Link>
             </li>
           ))}
         </ol>

@@ -17,7 +17,7 @@ const BANNER = {
     icon: ShieldCheck,
     tone: "border-emerald-200 bg-emerald-50 text-emerald-900",
     title: "Your credentials are verified",
-    text: "Your review queue and consultations will appear here in the next release.",
+    text: "Your assessment queue and clinical workspace are ready.",
   },
   pending: {
     icon: ShieldQuestion,
@@ -69,7 +69,7 @@ export default function DoctorOverviewPage() {
     <>
       <PageHeader
         title={`Welcome, Dr. ${user?.lastName ?? ""}`}
-        description="Your account and verification status."
+        description="Your account, verification status, and clinical work."
         actions={profile ? <VerificationBadge status={profile.verificationStatus} /> : null}
       />
 
@@ -83,6 +83,15 @@ export default function DoctorOverviewPage() {
       ) : (
         <div className="space-y-6">
           <VerificationCard profile={profile} />
+          {profile.verificationStatus === "verified" ? (
+            <section className="flex flex-col gap-3 rounded-xl border bg-card p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="font-semibold">Clinical workspace</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Review assessments, manage second opinions, and create patient care plans.</p>
+              </div>
+              <Link href="/doctor/assessments" className={buttonVariants({ size: "lg" })}>Open review queue</Link>
+            </section>
+          ) : null}
 
           <section className="rounded-xl border bg-card">
             <div className="border-b px-5 py-4">
